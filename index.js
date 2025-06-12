@@ -27,6 +27,7 @@ async function run() {
     await client.connect();
     const coffeeCollection= client.db("Espresso_Emporium").collection("add-coffee");
 
+    //sending data to mongodb cluster
     app.post('/add-coffee',async(req,res)=>{
         const newCoffee=req.body;
         // console.log(newCoffee);
@@ -34,6 +35,12 @@ async function run() {
         res.send(result);
         console.log("after adding in db", result)
     })
+    //showing the data from the cluster
+    app.get('/add-coffee',async(req,res)=>{
+        const result = await coffeeCollection.find().toArray();
+        res.send(result);
+    })
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
