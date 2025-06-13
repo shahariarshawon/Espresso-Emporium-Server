@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config()
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const app = express();
 const port = process.env.PORT || 3000;
 
@@ -27,6 +27,11 @@ async function run() {
     await client.connect();
     const coffeeCollection= client.db("Espresso_Emporium").collection("add-coffee");
 
+    //showing the data from the cluster
+    app.get('/add-coffee',async(req,res)=>{
+        const result = await coffeeCollection.find().toArray();
+        res.send(result);
+    })
     //sending data to mongodb cluster
     app.post('/add-coffee',async(req,res)=>{
         const newCoffee=req.body;
@@ -35,12 +40,32 @@ async function run() {
         res.send(result);
         console.log("after adding in db", result)
     })
-    //showing the data from the cluster
-    app.get('/add-coffee',async(req,res)=>{
-        const result = await coffeeCollection.find().toArray();
-        res.send(result);
+    //deleting coffee from the database through UI
+    app.delete('/add-coffee/:id',async(req,res)=>{
+      const id=req.params.id;
+      const filter={_id: new ObjectId(id)};
+      const result= await coffeeCollection.deleteOne(filter);
+      res.send(result);
     })
-
+    //updating the coffee
+    app.put('/add-coffee/:id',async(req,res)=>{
+      const id=req.params.id;
+      const filter={_id:new ObjectId(id)};
+      const options={upsert:true};
+      const updatedCoffee=req.body;
+      const updatedDoc={
+        $set:updatedCoffee
+      }
+      const result= await coffeeCollection.updateOne(filter,updatedDoc,options);
+      res.send(result);
+    })
+    //individual details for the each coffee
+    app.get('/add-coffee/:id',async(req,res)=>{
+      const id=req.params.id;
+      const filter={_id: new ObjectId(id)};
+      const result= await coffeeCollection.findOne(filter);
+      res.send(result);
+    })
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
