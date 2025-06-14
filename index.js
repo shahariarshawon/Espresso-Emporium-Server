@@ -26,7 +26,7 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
     const coffeeCollection= client.db("Espresso_Emporium").collection("add-coffee");
-
+    const userCollection=client.db("Espresso_Emporium").collection("users");
     //showing the data from the cluster
     app.get('/add-coffee',async(req,res)=>{
         const result = await coffeeCollection.find().toArray();
@@ -64,6 +64,13 @@ async function run() {
       const id=req.params.id;
       const filter={_id: new ObjectId(id)};
       const result= await coffeeCollection.findOne(filter);
+      res.send(result);
+    })
+
+    //sending users to the database
+    app.post('/users',async(req,res)=>{
+      const userProfile=req.body;
+      const result= await userCollection.insertOne(userProfile);
       res.send(result);
     })
     // Send a ping to confirm a successful connection
